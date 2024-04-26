@@ -1,0 +1,49 @@
+version: '3'
+services:
+  nginx-fruits:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./www:/var/www
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - php-fruits
+    networks:
+      - fruits_network
+
+  php-fruits:
+    build: ./php
+    container_name: php-fruits
+    volumes:
+      - ./www:/var/www
+    networks:
+      - fruits_network
+
+  mysql-fruits:
+    image: mysql:latest
+    container_name: mysql-fruits
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: fruits
+      MYSQL_ROOT_PASSWORD: 132
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - fruits_data:/var/lib/mysql/
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      - fruits_network
+
+networks:
+  fruits_network:
+    driver: bridge
+
+volumes:
+  fruits_data:
+    driver: local
